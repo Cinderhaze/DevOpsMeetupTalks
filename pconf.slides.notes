@@ -1,0 +1,70 @@
+Contributor Summit
+https://docs.google.com/document/d/13ZVCcaFNyqOuR7ttBG4QtjaFh9Fs-ivcu8olHA-B-UQ/edit
+https://github.com/puppetlabs/r10k/issues/567
+Some people were talking about puppet forge mirroring with pulp (http://pulpproject.org/2012/08/29/mirroring-puppet-forge-with-pulp/)
+Danzillo and Henrick, Cylomatic complexity calculations for puppet code
+
+PuppetConf Day 1
+https://puppet.com/blog/puppetconf-2016-keynotes-day-1-puppet-and-digital-transformation
+Link to Keynote video( https://www.youtube.com/watch?v=7z03bZZqAyE )
+- Focus on Situational Awareness
+-- Ability to drill into change and dependency graph
+- Docker image_build
+-- https://twitter.com/mmars/status/789154889616076800
+
+Interesting observation about day1 keynote - (https://twitter.com/rnelson0/status/789142549386579968)
+
+PuppetConf Day2
+https://puppet.com/blog/puppetconf-day-2-keynotes-azure-nano-server-salesforce-docker-mind-cio
+Jeffery Snover, Microsoft
+- Talked about Azure and Nano Server
+- The evolution and History of the Windows Server, and it's focus
+-- https://twitter.com/halr9000/status/789499833094664192
+
+```
+Apart from the technical side of his talk, Jeffrey asserted strongly that cloud is the new business model, and that it's the people who understand cloud who will replace today's C-level business leaders. He reminded the keynote audience that by staying current and on top of technology shifts, they can be those leaders.
+```
+
+Salesforce with puppet
+ - Declaritive 'end state' configuration worked better at scale than Procedural Scripts
+
+- Important DevOps/Lean detail to remember
+ -- https://twitter.com/jasonhand/status/789507391771385857
+- Importance of enabling the whole business to use $config_mngt but don't let the 'devops' team become the  bottleneck
+ -- https://twitter.com/hirojin/status/789508372273868800
+
+Docker and Puppet, together
+ - Previous culture was Dev/Ops silos
+ - Containers allowed the devs to deploy their software
+ - Ops team took the lead on containers, compared to it usually being a dev initiated task
+ -- Setting up the platform (monitoring/logging/deployment) for the dev team, help guide them toward cohesive practices
+
+
+Box - Testing puppet
+- Watching this talk was like seeing all of the information that I've scoured together over the past year
+https://github.com/jmoldow/box_spec_helper
+- created 'cluster runner' to run tests across several nodes
+- parallellize tests (rake spec_prep, spec_standalone, spec_clean parts of lifecycle)
+- draft slides
+ - https://cloud.app.box.com/s/aeqhi3obhmu8yghi6w5xad31yt9fwcx5
+ - interesting 'classpath eclipsing' to stub out 'global functions' 
+
+
+- Fill in 
+
+
+
+octocat-diff
+http://githubengineering.com/octocatalog-diff-github-s-puppet-development-and-testing-tool/
+
+Challenges of Container Configuration
+http://www.slideshare.net/lutter/challenges-of-container-configuration
+
+Gareth
+-Inventory
+https://github.com/puppetlabs/puppetlabs-inventory
+
+-Image Build
+https://forge.puppet.com/puppetlabs/image_build
+
+

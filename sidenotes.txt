@@ -1,0 +1,182 @@
+Post ideas
+
+puppetlabs/puppetlabs-inventory container.
+
+Works great if the container has an up to date GLIBC.  If it doesn't..
+
+#Run this command to turn the image into a container so we can mount the
+volumes
+$ docker run --name puppet-inventory puppet/puppet-inventory
+
+#Run the following to mount the volumes from the above container into 
+$ docker run --rm -it -u root --volumes-from=puppet-inventory ubuntu:12.04
+/opt/puppetlabs/puppet/bin/puppet inventory
+/opt/puppetlabs/puppet/bin/ruby: /lib/x86_64-linux-gnu/libc.so.6: version
+`GLIBC_2.17' not found (required by /opt/puppetlabs/puppet/lib/libruby.so.2.1)
+
+#So lets use ldd to find out which libraries are linked
+dawiest@dawiest-VPCSC1AFM:~/git/sandbox/daw-inventory$ docker run --rm -it
+--entrypoint /bin/bash puppet/puppet-inventory ldd
+/opt/puppetlabs/puppet/bin/ruby
+        linux-vdso.so.1 =>  (0x00007ffe1df9a000)
+        libruby.so.2.1 => /opt/puppetlabs/puppet/lib/libruby.so.2.1
+(0x00007f1555c43000)
+        libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f1555878000)
+        libpthread.so.0 => /lib/x86_64-linux-gnu/libpthread.so.0
+(0x00007f155565a000)
+        libdl.so.2 => /lib/x86_64-linux-gnu/libdl.so.2 (0x00007f1555456000)
+        libcrypt.so.1 => /lib/x86_64-linux-gnu/libcrypt.so.1
+(0x00007f155521e000)
+        libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007f1554f14000)
+        /lib64/ld-linux-x86-64.so.2 (0x0000565473460000)
+
+
+#checking with the volumes mounted
+dawiest@dawiest-VPCSC1AFM:~/git/sandbox/daw-inventory$ docker run --rm -it -u
+root --volumes-from=puppet-inventory ubuntu:12.04  ldd
+/opt/puppetlabs/puppet/bin/ruby
+/opt/puppetlabs/puppet/bin/ruby: /lib/x86_64-linux-gnu/libc.so.6: version
+`GLIBC_2.17' not found (required by /opt/puppetlabs/puppet/lib/libruby.so.2.1)
+        linux-vdso.so.1 =>  (0x00007ffd9d36c000)
+        libruby.so.2.1 => /opt/puppetlabs/puppet/lib/libruby.so.2.1
+(0x00007fc217a5f000)
+        libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007fc21769f000)
+        libpthread.so.0 => /lib/x86_64-linux-gnu/libpthread.so.0
+(0x00007fc217481000)
+        libdl.so.2 => /lib/x86_64-linux-gnu/libdl.so.2 (0x00007fc21727d000)
+        libcrypt.so.1 => /lib/x86_64-linux-gnu/libcrypt.so.1
+(0x00007fc217044000)
+        libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007fc216d47000)
+        /lib64/ld-linux-x86-64.so.2 (0x00005600eb38c000)
+
+#So now.. Can I copy the libraries from the puppet-inventory container into a
+new volume, and set an ENV for the LDD_LIBRARY_PATH to include that location?
+# Here's a dockerfile...
+$ cat Dockerfile
+FROM puppet/puppet-inventory
+
+# I need to figure out a more clever way to loop over the results from ldd and
+# extract the libraries, hardcoding for now
+#root@0c077a2aee15:/# ldd `which ruby`
+#        linux-vdso.so.1 =>  (0x00007ffec5f56000)
+#        libruby.so.2.1 => /opt/puppetlabs/puppet/lib/libruby.so.2.1
+#        (0x00007fcf1f571000)
+#        libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007fcf1f1a6000)
+#        libpthread.so.0 => /lib/x86_64-linux-gnu/libpthread.so.0
+#        (0x00007fcf1ef88000)
+#        libdl.so.2 => /lib/x86_64-linux-gnu/libdl.so.2 (0x00007fcf1ed84000)
+#        libcrypt.so.1 => /lib/x86_64-linux-gnu/libcrypt.so.1
+#        (0x00007fcf1eb4c000)
+#        libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007fcf1e842000)
+#        /lib64/ld-linux-x86-64.so.2 (0x000055c056585000)
+
+ENV libdir=/opt/puppetlabs/puppet/lib/
+RUN cp /lib/x86_64-linux-gnu/libc.so.6 $libdir; \
+    cp /lib/x86_64-linux-gnu/libpthread.so.0  $libdir ; \
+    cp /lib/x86_64-linux-gnu/libdl.so.2  $libdir ; \
+    cp /lib/x86_64-linux-gnu/libcrypt.so.1  $libdir ;\
+    cp /lib/x86_64-linux-gnu/libm.so.6 $libdir ;\
+    cp /lib64/ld-linux-x86-64.so.2 $libdir ;
+
+COPY Dockerfile /
+
+
+# Help from sam
+root@536f89dde064:/# find /opt/puppetlabs/puppet/bin/ -type f -exec ldd {}
+\;|grep so| sed -e '/^[^\t]/ d' | sed -e 's/\t//' | sed -e 's/.*=..//' | sed
+-e 's/ (0.*)//' | sort | uniq  | sort
+
+/lib/x86_64-linux-gnu/libblkid.so.1
+/lib/x86_64-linux-gnu/libc.so.6
+/lib/x86_64-linux-gnu/libcrypt.so.1
+/lib/x86_64-linux-gnu/libdl.so.2
+/lib/x86_64-linux-gnu/libm.so.6
+/lib/x86_64-linux-gnu/libpthread.so.0
+/lib/x86_64-linux-gnu/libreadline.so.6
+/lib/x86_64-linux-gnu/librt.so.1
+/lib/x86_64-linux-gnu/libtinfo.so.5
+/lib/x86_64-linux-gnu/libuuid.so.1
+n
+
+
+
+
+
+### And when I run the command by setting the library path...
+##$ docker run --rm -it  -e LD_LIBRARY_PATH=/opt/puppetlabs/puppet/lib
+cinderhaze/puppet-##inventory | head
+##{
+##  "schema_version": 1,
+  "created": "2016-10-30T04:29:19Z",
+  "resources": [
+    {
+      "title": "umountfs",
+      "resource": "service",
+      "ensure": "running",
+      "enable": "false",
+      "provider": "debian"
+
+#Success!
+
+So now I can define a function like so to inventory a container..
+
+
+Thomas Uphill's talk on Troubleshooting puppet
+https://twitter.com/uphillian/status/789218304619458560
+https://docs.google.com/presentation/d/1AT2j97HV_y2QNH_HFKwZ6ExQDKvfC_lt6qBZaai4ATo/edit#slide=id.g1839748d2e_0_11
+
+Here's the schedule - https://puppetconf2016.sched.org/
+
+What I actually got to see
+Oct 19th
+Puppet Contributor Summit Breakfast
+- Sat at a table with a few other puppet users.  Talked about some pain points
+  with puppet.
+- Was across from someone who was just getting started with puppet
+- Next to someone who had a similar problem 'supply chain' and 'getting
+  modules and things in' with puppet
+
+Puppet Contributor Summit
+- Got my badge and swag bag.  On the way over I ended up talking with Kara
+  Sowels(sp?) and Eric Sorenson, even though I didn't relize it at the time.
+- Initially sat at the table with the folks from onyxpoint.com/SIMP .  They
+  have a similar set of challenges that we have.
+Presentation
+- Eric Sorenson had some A/V Issues, but took it like a champ
+Collobration time
+- Headed over to the r10k and forge table
+- Lots of discussion about standing up your own forge, full vs partial
+  mirroring.  
+- I brought up our issue, where having the http(s) based option for a
+  puppetfile would be an awesome addition
+
+- Grabbed some lunch
+- Spent a fair bit of time talking with (Troy?), who deals with similar
+  environments to what I have.  
+-   
+
+October 20th
+Day 1
+Keynote 
+-
+11:15 slot 
+ - I actually missed all of these, but I was spending my time after the
+   keynote hallway tracking with John Willis.
+  - Talked with him about issues in my industry
+  - He talked about Jeffery Snover, and how he was almost scorned while at
+    microsoft.
+ - Interesting Talks in this slot..
+  -  https://puppetconf2016.sched.org/event/6fj2/scaling-puppet-and-puppet-culture-at-github-kevin-paulisse-github
+  - rnelson0
+    https://rnelson0.com/2016/10/29/puppetconf-followup-upgrading-to-puppet-4/
+  - https://puppetconf2016.sched.org/event/6fj6/service-discovery-and-puppet-marc-cluet-ukon-cherry
+  - https://puppetconf2016.sched.org/event/6fj7/delivering-premium-quality-modules-using-beaker-and-vmpooler-for-multi-platform-testing-rene-last-kpn-bv-dimitri-tischenko-myndrik
+  - https://puppetconf2016.sched.org/event/6fjH/a-year-in-open-source-automated-compliance-with-puppet-trevor-vaughan-onyx-point-inc
+   - https://twitter.com/peiriannydd
+   - https://twitter.com/PeterSouter/status/789174110400020482
+
+- http://lh3.googleusercontent.com/ZE_FlRhIjlfueaWLxIK0_eFkUgJ9rEc2wg-akVq_D9ghFk4i3BWA52tdv5mZ4rVyDYR38hPIC-j-ZT3uY0IK=s0
+
+1:30 slot
+ - https://puppetconf2016.sched.org/event/6fj8/puppetize-all-the-things-google-cloud-nelson-araujo-google-david-schmitt-puppet
+ - https://puppetconf2016.sched.org/event/6fjC/puppet-troubleshooting-thomas-uphill-wells-fargo
