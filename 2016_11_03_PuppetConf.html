@@ -78,6 +78,7 @@ class: inverse
 ---
 
 # What IS PuppetConf?
+
 --
 But first... what is Puppet?
 
@@ -90,6 +91,7 @@ But first... what is Puppet?
 Puppet provides a standard way of delivering and operating software, no matter where it runs. With the Puppet approach, you define what you want your apps and infrastructure to look like using a common easy-to-read language. From there you can share, test and enforce the changes you want to make across your datacenter. And at every step of the way, you have the visibility and reporting you need to make decisions and prove compliance. 
 
 The result: you get a standard way of automating all of it, at scale.
+
 ---
 ###What we're going to cover
 
@@ -155,30 +157,42 @@ The result: you get a standard way of automating all of it, at scale.
  - [Turning Pain Into Gain: A Unit Testing Story](https://puppetconf2016.sched.org/event/6fjL/turning-pain-into-gain-a-unit-testing-story-nadeem-ahmad-jordan-moldow-box)
 
 ???
+This talk pretty much summed up my last year of trying to find good examples and standards for writing puppet tests
 
----
+--
+- 3:45
+ - [Watching the Puppet Show](https://puppetconf2016.sched.org/event/6fjY/watching-the-puppet-show-sean-porter-heavy-water-operations)
 
 ???
--
-11:15 slot 
- - I actually missed all of these, but I was spending my time after the keynote hallway tracking with John Willis.
-  - Talked with him about issues in my industry
-   - He talked about Jeffery Snover, and how he was almost scorned while at microsoft.
- - Interesting Talks in this slot..
-  -  https://puppetconf2016.sched.org/event/6fj2/scaling-puppet-and-puppet-culture-at-github-kevin-paulisse-github
-  - rnelson0 https://rnelson0.com/2016/10/29/puppetconf-followup-upgrading-to-puppet-4/
-  - https://puppetconf2016.sched.org/event/6fj6/service-discovery-and-puppet-marc-cluet-ukon-cherry
-  - https://puppetconf2016.sched.org/event/6fj7/delivering-premium-quality-modules-using-beaker-and-vmpooler-for-multi-platform-testing-rene-last-kpn-bv-dimitri-tischenko-myndrik
-  - https://puppetconf2016.sched.org/event/6fjH/a-year-in-open-source-automated-compliance-with-puppet-trevor-vaughan-onyx-point-inc
-   - https://twitter.com/peiriannydd
-   - https://twitter.com/PeterSouter/status/789174110400020482
-   - http://lh3.googleusercontent.com/ZE_FlRhIjlfueaWLxIK0_eFkUgJ9rEc2wg-akVq_D9ghFk4i3BWA52tdv5mZ4rVyDYR38hPIC-j-ZT3uY0IK=s0
----
+Talk by Sean Porter about Sensu, a 'cloud native' monitoring platform.  
+Basic archecture of Sensu is 
+- RabbitMQ messaging buss
+- Agents that post Nagios style metrics out to Topics
+- 'Stateless' servers that read off of the messaging bus and aggregrate to Redis
+- Graphical client that reads from redis to view monitoring informatino
 
-October 20th
-Day 1
-Keynote 
+Most interesting thing I learned?
+- They have a Serverspec plugin that allows you to use Serverspec tests for both Acceptance testing and Monitoring, so you don't have to write the same thing two different ways
+ - Downfall is that it is still not well integrated, usually a build step of copying the tests from the build area to the deployment is needed to get the tests out onto instances
 
+--
+- 4:45
+ - [Avoiding Toxic Technical Debt Derivatives](https://puppetconf2016.sched.org/event/6fjc/avoiding-toxic-technical-debt-derivatives-r-tyler-croy-cloudbees-inc)
+ - [Derployments](https://twitter.com/stahnma/status/789258661583392768)
+
+???
+Derployments
+ - https://twitter.com/stahnma/status/789258661583392768
+ - To monitor you have to know what a service  working really means
+
+--
+- 6:00
+ - [Wave Party](To monitor you have to know what a service  working really means)
+
+???
+- Hung out with Igor(iGalic) and Rob Nelson(rnelson0)
+- Talked with a bunch of folks from Nike
+ - basically the 'platform' team
 
 ---
 
